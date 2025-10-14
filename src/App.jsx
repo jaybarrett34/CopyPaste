@@ -122,7 +122,7 @@ function App() {
               </div>
               <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', paddingLeft: '46px' }}>
                 <TemperatureSlider
-                  initialTemp={temperature}
+                  value={temperature}
                   onChange={handleTemperatureChange}
                 />
               </div>

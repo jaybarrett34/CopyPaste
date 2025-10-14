@@ -1,190 +1,251 @@
-# CopyPaste v1.1.0 - Quick Start Guide
+# 🚀 CopyPaste v1.1.0 - Quick Start Guide
 
-## 🚀 Installation
+## What's New in v1.1.0
 
-1. **Download**: `/Users/bigballsinyourjaws/Projects/CopyPaste/release/CopyPaste-1.1.0-arm64.dmg`
-2. **Mount**: Double-click the DMG file
-3. **Install**: Drag CopyPaste.app to your Applications folder
-4. **Launch**: Open CopyPaste from Applications
-5. **Grant Permissions**: Click "Open System Settings" when prompted and enable Accessibility
-
-## 🎮 Basic Usage
-
-### Starting the App
-- The app appears as a small glass window at the top center of your screen
-- Yellow status light = Ready
-- Blue pulsing light = Typing
-- Orange light = Paused
-- Red pulsing light = Error
-
-### Quick Typing
-1. Copy any text to your clipboard (Cmd+C)
-2. Focus the text field where you want to type
-3. Press **Cmd+Alt+V**
-4. Watch it type naturally!
-
-## 🎛️ Controls
-
-### Collapsed View (140×50 pixels)
-- **Status Light**: Shows current state
-- **+ Button**: Expand to access settings
-
-### Expanded View (500×85 pixels)
-- **- Button**: Collapse back to minimal view
-- **WPM Input**: Set typing speed (10-900)
-- **Temperature Slider**: Control typing variation (0-100%)
-- **Shortcut Display**: Shows active shortcut (⌘⌥V)
-
-## ⌨️ Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| **Cmd+Alt+V** | Start/Stop typing |
-| **Cmd+Shift+P** | Pause/Resume typing |
-| **Cmd+Alt+Up** | Move window up |
-| **Cmd+Alt+Down** | Move window down |
-| **Cmd+Alt+Left** | Move window left |
-| **Cmd+Alt+Right** | Move window right |
-| **Cmd+Q** | Quit application |
-
-## 🌡️ Temperature Settings
-
-Temperature controls how "human" the typing feels:
-
-| Temp | Mode | Behavior |
-|------|------|----------|
-| **0-10%** | Robot | Zero variation, instant typing |
-| **11-40%** | Fast | Minimal variation, quick |
-| **41-60%** | Human | Realistic natural variation (default 50%) |
-| **61-80%** | Natural | Increased human-like pauses |
-| **81-100%** | Erratic | Very human, lots of pauses |
-
-### Recommended Settings
-
-**Instant Paste-Like Typing:**
-- WPM: 900
-- Temperature: 0%
-
-**Fast but Realistic:**
-- WPM: 120
-- Temperature: 30%
-
-**Natural Human Typing:**
-- WPM: 80
-- Temperature: 50% (default)
-
-**Slow Deliberate Typing:**
-- WPM: 40
-- Temperature: 75%
-
-**Very Human (for strict detection):**
-- WPM: 60
-- Temperature: 100%
-
-## 🧪 Testing Your Setup
-
-### Test 1: Basic Typing
-1. Copy this text: "The quick brown fox jumps over the lazy dog."
-2. Open TextEdit or any text field
-3. Press Cmd+Alt+V
-4. Verify it types correctly
-
-### Test 2: WPM Accuracy
-1. Copy ~100 words of text
-2. Set WPM to 60
-3. Start a timer
-4. Press Cmd+Alt+V
-5. It should take approximately 1 minute 40 seconds
-
-### Test 3: Temperature Variation
-1. Copy some text
-2. Set temperature to 0%, type it (should be very fast and consistent)
-3. Set temperature to 100%, type it again (should have lots of pauses)
-
-### Test 4: Pause/Resume
-1. Start typing a long text
-2. Press Cmd+Shift+P to pause
-3. Press Cmd+Shift+P again to resume
-
-## 🐛 Troubleshooting
-
-### App Won't Type Anything
-- **Check Accessibility Permissions**: System Settings → Privacy & Security → Accessibility
-- **Check Clipboard**: Make sure you have text copied (Cmd+C)
-- **Check Focus**: Click in the text field where you want to type
-
-### Typing is Too Fast/Slow
-- Adjust WPM: Click + to expand, change WPM value
-- For instant typing: Set WPM to 900 and temperature to 0%
-- For realistic typing: Set WPM to 60-80 and temperature to 50%
-
-### Window is in the Wrong Place
-- **Drag It**: Click and drag the window anywhere
-- **Use Arrows**: Cmd+Alt+Up/Down/Left/Right to move by 10 pixels
-
-### Can't See the Window
-- Window is always-on-top, even over fullscreen apps
-- Look at the top center of your screen
-- Try Cmd+Alt+Down to move it down
-
-### Shortcuts Not Working
-- Make sure no other app is using the same shortcuts
-- Arrow key shortcuts changed from Cmd+Shift to Cmd+Alt in v1.1.0
-
-## 💡 Pro Tips
-
-1. **Drag from Anywhere**: The entire window is draggable, not just the title bar
-2. **Quick Settings**: Keep expanded when adjusting settings, collapse for minimal distraction
-3. **Status Light**: Watch the status light to know when typing is complete
-4. **WPM Range**: Try 900 WPM for instant paste-like speed
-5. **Temperature**: Use 0% for speed, 100% for bypassing paste detection
-
-## 🎯 Use Cases
-
-### Bypass Paste Detection
-- Some websites detect Cmd+V and block pasting
-- Use CopyPaste with 60 WPM and 75% temperature to appear human
-
-### Fast Data Entry
-- Use 300-900 WPM with 0% temperature for rapid entry
-- Still looks like typing to the system
-
-### Natural Typing
-- Default settings (80 WPM, 50% temp) work for most cases
-- Adjust temperature based on how strict the detection is
-
-### Long Documents
-- CopyPaste handles 1000+ words without issues
-- You can stop anytime with Cmd+Alt+V
-
-## 📊 Performance
-
-- **Typing Speed**: 10-900 WPM
-- **Text Length**: Unlimited (tested with 1000+ words)
-- **Character Support**: All ASCII, Unicode, emoji, special characters
-- **Window Size**: Minimal 140×50 pixels when collapsed
-- **Memory Usage**: ~100 MB (Electron app)
-
-## ⚠️ Known Limitations
-
-1. **Screen Capture Protection**: Enabled but won't block modern tools (Cmd+Shift+5, Zoom)
-2. **Settings Persistence**: Settings reset when app closes (intentional)
-3. **Shortcut Customization**: Not yet implemented
-
-## 🆘 Support
-
-If you encounter issues:
-1. Check CLAUDE.md for detailed documentation
-2. Review CHANGELOG.md for recent changes
-3. Test with the checklist in CLAUDE.md
-
-## 📦 Version Info
-
-- **Version**: 1.1.0
-- **Release Date**: October 14, 2025
-- **Platform**: macOS (Apple Silicon + Intel)
-- **Size**: 111 MB DMG, 105 MB ZIP
+### Major Features Added
+- ✅ **Accurate WPM Calculation** - Fixed formula, now truly matches set WPM
+- ✅ **Temperature System** - 0-100% slider for typing variation control
+- ✅ **Dynamic UI** - Window resizes from 140×50 to 500×85 pixels
+- ✅ **Extended WPM Range** - Now supports 10-900 WPM (was 10-300)
+- ✅ **Fixed Arrow Keys** - Changed to Cmd+Alt+Arrow (from Cmd+Shift)
+- ✅ **Cross-Platform** - Windows and Linux build support added
 
 ---
 
-**Enjoy natural typing automation!**
+## Installation
+
+### macOS (Apple Silicon)
+1. Open `release/CopyPaste-1.1.0-arm64.dmg`
+2. Drag **CopyPaste.app** to Applications folder
+3. Right-click and select "Open" (first time only)
+4. Grant **Accessibility** permissions when prompted
+
+### macOS (Intel)
+Same steps, but use `release/CopyPaste-1.1.0.dmg`
+
+---
+
+## Quick Usage
+
+### Step 1: Copy Text
+Copy any text to your clipboard (Cmd+C)
+
+### Step 2: Click Where You Want to Type
+Focus the text field or app where you want the text typed
+
+### Step 3: Trigger Typing
+Press **`Cmd+Alt+V`** to start typing from clipboard
+
+### Step 4: Enjoy Natural Typing
+Watch as it types with human-like timing and variation!
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| **`Cmd+Alt+V`** | Start/Stop typing |
+| **`Cmd+Shift+P`** | Pause/Resume typing |
+| **`Cmd+Alt+↑↓←→`** | Move window (NEW!) |
+| **`Cmd+Q`** | Quit application |
+
+---
+
+## Understanding the UI
+
+### Collapsed State (140×50px)
+```
+┌──────────────┐
+│ 🟡  [+]      │
+└──────────────┘
+```
+- **Yellow light** = Ready to type
+- **[+] button** = Click to expand
+
+### Expanded State (500×85px)
+```
+┌────────────────────────────────────────┐
+│ 🟡 [-] WPM [120]           ⌘⌥V        │
+│      Temp [━━━━●] 50% Natural          │
+└────────────────────────────────────────┘
+```
+- **[-] button** = Click to collapse
+- **WPM input** = Set typing speed (10-900)
+- **Temp slider** = Set variation (0-100%)
+- **⌘⌥V** = Active keyboard shortcut
+
+---
+
+## Status Light Colors
+
+| Color | Meaning |
+|-------|---------|
+| 🟡 **Yellow** | Ready - waiting for command |
+| 🔵 **Blue** (pulsing) | Typing - actively typing |
+| 🟠 **Orange** | Paused - typing paused |
+| 🔴 **Red** (pulsing) | Error - something went wrong |
+
+---
+
+## Temperature System Explained
+
+The **Temperature slider** controls typing variation:
+
+### 0% - Robot Mode
+- **Zero variation** in timing
+- **Instant typing** at exact WPM
+- Use for: Maximum speed, data entry
+
+### 25% - Fast Mode
+- **Minimal variation**
+- Consistent but fast
+- Use for: Quick form filling
+
+### 50% - Natural Mode (Default)
+- **Human-like variation**
+- Realistic pauses
+- Use for: General typing, avoiding detection
+
+### 75% - Human Mode
+- **High variation**
+- Noticeable pauses between words
+- Use for: Maximum human-like behavior
+
+### 100% - Erratic Mode
+- **Maximum variation**
+- Random pauses and timing
+- Use for: Simulating tired/distracted typing
+
+---
+
+## Example Use Cases
+
+### Instant Paste (but looks like typing)
+```
+WPM: 900
+Temperature: 0%
+Result: Types instantly with no variation
+```
+
+### Natural Data Entry
+```
+WPM: 120
+Temperature: 50%
+Result: Fast but realistic typing
+```
+
+### Avoid Paste Detection
+```
+WPM: 80
+Temperature: 75%
+Result: Indistinguishable from human typing
+```
+
+### Slow/Careful Typing
+```
+WPM: 60
+Temperature: 100%
+Result: Deliberate, careful typing with pauses
+```
+
+---
+
+## Tips & Tricks
+
+### Moving the Window
+1. **Drag** from anywhere on the glass surface
+2. **Or use** Cmd+Alt+Arrow keys for precise positioning
+3. Window stays **always on top** of other apps
+
+### Adjusting Speed Mid-Typing
+- WPM changes apply **immediately** to current typing session
+- Temperature changes apply to **next session**
+
+### Copying Long Text
+- No limits on text length
+- Handles special characters, unicode, emoji
+- Maintains formatting (newlines, tabs)
+
+### If Typing Won't Start
+1. Check Accessibility permissions (System Settings)
+2. Verify clipboard has text (Cmd+C)
+3. Make sure a text field is focused
+4. Try clicking in the target app first
+
+---
+
+## Known Limitations
+
+### Screen Capture Protection
+- ⚠️ **macOS**: Cannot block Cmd+Shift+5, Zoom, or Hubstaff
+- This is a technical limitation (Apple's ScreenCaptureKit bypasses protection)
+- Best effort protection is enabled, but modern tools can capture
+- See CLAUDE.md for full technical explanation
+
+### Settings Persistence
+- Settings reset on app restart (intentional design choice)
+- Default: 80 WPM, 50% temperature
+
+### Platform Support
+- **macOS**: Fully tested and working
+- **Windows**: Build available, needs testing
+- **Linux**: Build available, needs testing
+
+---
+
+## Troubleshooting
+
+### "App is damaged and can't be opened"
+```bash
+xattr -cr /Applications/CopyPaste.app
+```
+
+### App doesn't type anything
+- Grant Accessibility permissions
+- Restart app after granting permissions
+- Check clipboard has content
+
+### Window disappeared
+- Press Cmd+Alt+Arrow to move it back
+- Or quit (Cmd+Q) and reopen
+
+### Status light stays yellow
+- Clipboard is empty, copy some text first
+- Or typing finished successfully
+
+---
+
+## Advanced
+
+### For Developers
+```bash
+# Run in dev mode
+npm run dev          # Start Vite dev server
+npm run electron     # Start Electron app
+
+# Build from source
+npm run build        # Build Vite bundle
+npm run package      # Package macOS app
+
+# See CLAUDE.md for architecture details
+```
+
+### File Locations
+- **App**: `/Applications/CopyPaste.app`
+- **Source**: `/Users/bigballsinyourjaws/Projects/CopyPaste/`
+- **Builds**: `/Users/bigballsinyourjaws/Projects/CopyPaste/release/`
+
+---
+
+## Support & Feedback
+
+- **GitHub**: https://github.com/jaybarrett34/CopyPaste
+- **Documentation**: See `CLAUDE.md` for technical details
+- **Testing**: See testing checklist in CLAUDE.md
+
+---
+
+**Enjoy your enhanced typing automation!** 🎉
+
+*v1.1.0 - October 14, 2025*
