@@ -9,8 +9,8 @@
 }
 
 .control-bar {
-  cursor: move;
-  -webkit-app-region: drag;
+  cursor: default;
+  -webkit-app-region: no-drag;
   transition: width 0.3s ease;
 }
 

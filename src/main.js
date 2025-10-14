@@ -9,6 +9,7 @@ let isTyping = false;
 let isPaused = false;
 let wpm = 80;
 let temperature = 50; // 0-100: 0=robot, 50=human, 100=erratic
+let pauseMultiplier = 50; // 0-100: controls how much extra delay at word boundaries
 let currentTypingProcess = null;
 
 // Character lookup tables for fast typing
@@ -27,10 +28,11 @@ const REGULAR_CHAR_MAP = {
 
 // Simple typing simulator - core macro functionality
 class TypingSimulator {
-  constructor(text, wordsPerMinute, temp = 50) {
+  constructor(text, wordsPerMinute, temp = 50, pauseMult = 50) {
     this.text = text;
     this.wpm = wordsPerMinute;
     this.temperature = temp; // 0-100
+    this.pauseMultiplier = pauseMult; // 0-100
     this.isStopped = false;
     this.isPaused = false;
     this.currentIndex = 0;
@@ -112,32 +114,44 @@ class TypingSimulator {
   }
 
   calculateDelay(char, prevChar) {
-    // Fixed WPM calculation: 6 CPW (5 chars + 1 space) for accurate timing
-    const baseDelay = (60 / this.wpm) * 1000 / 6;
+    // WPM = Words Per Minute
+    // Standard: 1 word = 5 characters
+    // So characters per minute = WPM * 5
+    // Milliseconds per character = 60000 / (WPM * 5) = 12000 / WPM
+    const baseDelay = 12000 / this.wpm;
 
-    // Temperature-based character variation (0% temp = 0 var, 100% temp = 50% var)
+    // Temperature controls randomness/variation (0-100%)
     const tempFactor = this.temperature / 100; // 0.0 to 1.0
-    const maxVariation = tempFactor * 0.5;
-    const charVariation = baseDelay * (Math.random() * maxVariation * 2 - maxVariation);
 
-    let delay = baseDelay + charVariation;
+    // Pause multiplier controls extra delay at boundaries (0-100%)
+    const pauseFactor = this.pauseMultiplier / 100; // 0.0 to 1.0
 
-    // Word boundary pauses (scaled by temperature)
-    if (prevChar === ' ') {
-      delay += (Math.random() * 100 + 150) * tempFactor;
+    // Base delay multiplier starts at 1.0 (no change)
+    let delayMultiplier = 1.0;
+
+    // Add pause multipliers at word boundaries
+    if (pauseFactor > 0) {
+      if (prevChar === ' ') {
+        // Space: 1.2x to 2.0x delay (at 100% pause)
+        delayMultiplier = 1.0 + (0.8 * pauseFactor);
+      } else if (prevChar === '.' || prevChar === '!' || prevChar === '?') {
+        // Sentence end: 1.5x to 3.0x delay (at 100% pause)
+        delayMultiplier = 1.0 + (2.0 * pauseFactor);
+      } else if (prevChar === ',') {
+        // Comma: 1.1x to 1.5x delay (at 100% pause)
+        delayMultiplier = 1.0 + (0.4 * pauseFactor);
+      }
     }
 
-    // Sentence pauses (scaled by temperature)
-    if (prevChar === '.' || prevChar === '!' || prevChar === '?') {
-      delay += (Math.random() * 400 + 400) * tempFactor;
-    }
+    // Apply multiplier to base delay
+    let delay = baseDelay * delayMultiplier;
 
-    // Comma pauses (scaled by temperature)
-    if (prevChar === ',') {
-      delay += (Math.random() * 100 + 100) * tempFactor;
-    }
+    // Add temperature-based random variation (±25% at max temp)
+    const maxVariation = tempFactor * 0.25;
+    const charVariation = delay * (Math.random() * maxVariation * 2 - maxVariation);
+    delay += charVariation;
 
-    return Math.max(delay, 20);
+    return Math.max(delay, 10);
   }
 
   sleep(ms) {
@@ -268,7 +282,7 @@ function registerGlobalShortcuts() {
     } else {
       const clipboardText = clipboard.readText();
       if (clipboardText) {
-        currentTypingProcess = new TypingSimulator(clipboardText, wpm, temperature);
+        currentTypingProcess = new TypingSimulator(clipboardText, wpm, temperature, pauseMultiplier);
         currentTypingProcess.start();
       }
     }
@@ -351,6 +365,12 @@ ipcMain.on('update-wpm', (event, newWpm) => {
 ipcMain.on('update-temperature', (event, newTemp) => {
   if (newTemp >= 0 && newTemp <= 100) {
     temperature = newTemp;
+  }
+});
+
+ipcMain.on('update-pause', (event, newPause) => {
+  if (newPause >= 0 && newPause <= 100) {
+    pauseMultiplier = newPause;
   }
 });
 

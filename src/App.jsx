@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import GlassSurface from './components/GlassSurface';
 import TemperatureSlider from './components/TemperatureSlider';
+import PauseSlider from './components/PauseSlider';
 import './App.css';
 
 function App() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [wpm, setWpm] = useState(80);
   const [temperature, setTemperature] = useState(50);
+  const [pauseMultiplier, setPauseMultiplier] = useState(50);
   const [typingState, setTypingState] = useState('ready'); // ready, typing, paused, error
 
   useEffect(() => {
@@ -24,7 +26,7 @@ function App() {
   useEffect(() => {
     // Resize window when expansion state changes
     const width = isExpanded ? 500 : 140;
-    const height = isExpanded ? 85 : 50;
+    const height = isExpanded ? 110 : 50;
     window.electron.resizeWindow({ width, height });
   }, [isExpanded]);
 
@@ -57,6 +59,11 @@ function App() {
     window.electron.updateTemperature(newTemp);
   };
 
+  const handlePauseChange = (newPause) => {
+    setPauseMultiplier(newPause);
+    window.electron.updatePause(newPause);
+  };
+
   const getStatusLightClass = () => {
     switch (typingState) {
       case 'typing':
@@ -74,7 +81,7 @@ function App() {
     <div className="app-container">
       <GlassSurface
         width={isExpanded ? 500 : 140}
-        height={isExpanded ? 85 : 50}
+        height={isExpanded ? 110 : 50}
         borderRadius={isExpanded ? 20 : 25}
         className="control-bar"
       >
@@ -124,6 +131,12 @@ function App() {
                 <TemperatureSlider
                   value={temperature}
                   onChange={handleTemperatureChange}
+                />
+              </div>
+              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', paddingLeft: '46px' }}>
+                <PauseSlider
+                  value={pauseMultiplier}
+                  onChange={handlePauseChange}
                 />
               </div>
             </>
