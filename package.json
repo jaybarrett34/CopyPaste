@@ -1,7 +1,7 @@
 {
   "name": "copypaste",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Natural typing automation tool for macOS, Windows, and Linux",
   "main": "src/main.js",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,6 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "description": "Natural typing automation tool for macOS",
   "dependencies": {
     "@jitsi/robotjs": "^0.6.18",
     "electron-squirrel-startup": "^1.0.1",
@@ -37,6 +36,7 @@
       "dist/**/*",
       "src/main.js",
       "src/preload.js",
+      "src/platform/**/*",
       "node_modules/**/*"
     ],
     "mac": {
@@ -61,7 +61,31 @@
       }
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
     },
     "directories": {
       "buildResources": "build",

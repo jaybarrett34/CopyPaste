@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import GlassSurface from './components/GlassSurface';
+import TemperatureSlider from './components/TemperatureSlider';
 import './App.css';
 
 function App() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [wpm, setWpm] = useState(80);
+  const [temperature, setTemperature] = useState(50);
   const [typingState, setTypingState] = useState('ready'); // ready, typing, paused, error
 
   useEffect(() => {
@@ -19,6 +21,13 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    // Resize window when expansion state changes
+    const width = isExpanded ? 500 : 140;
+    const height = isExpanded ? 85 : 50;
+    window.electron.resizeWindow({ width, height });
+  }, [isExpanded]);
+
   const handleWpmChange = (e) => {
     const value = e.target.value;
 
@@ -29,7 +38,7 @@ function App() {
     }
 
     const newWpm = parseInt(value);
-    if (!isNaN(newWpm) && newWpm >= 10 && newWpm <= 300) {
+    if (!isNaN(newWpm) && newWpm >= 10 && newWpm <= 900) {
       setWpm(newWpm);
       window.electron.updateWpm(newWpm);
     }
@@ -37,10 +46,15 @@ function App() {
 
   const handleWpmBlur = () => {
     // If empty or invalid, reset to 80
-    if (wpm === '' || isNaN(wpm) || wpm < 10 || wpm > 300) {
+    if (wpm === '' || isNaN(wpm) || wpm < 10 || wpm > 900) {
       setWpm(80);
       window.electron.updateWpm(80);
     }
+  };
+
+  const handleTemperatureChange = (newTemp) => {
+    setTemperature(newTemp);
+    window.electron.updateTemperature(newTemp);
   };
 
   const getStatusLightClass = () => {
@@ -59,42 +73,60 @@ function App() {
   return (
     <div className="app-container">
       <GlassSurface
-        width={isExpanded ? 240 : 140}
-        height={50}
-        borderRadius={25}
+        width={isExpanded ? 500 : 140}
+        height={isExpanded ? 85 : 50}
+        borderRadius={isExpanded ? 20 : 25}
         className="control-bar"
       >
-        <div className="controls">
-          <div className="status-indicator">
-            <div className={`status-light ${getStatusLightClass()}`} />
-          </div>
-
-          <button
-            className="expand-btn"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? '−' : '+'}
-          </button>
-
-          {isExpanded && (
-            <div className="expanded-controls">
-              <div className="control-group">
-                <label htmlFor="wpm">WPM</label>
-                <input
-                  id="wpm"
-                  type="number"
-                  value={wpm}
-                  onChange={handleWpmChange}
-                  onBlur={handleWpmBlur}
-                  min="10"
-                  max="300"
-                  className="wpm-input"
+        <div className="controls" style={{ flexDirection: isExpanded ? 'column' : 'row', padding: isExpanded ? '10px 16px' : '6px 12px', gap: isExpanded ? '6px' : '8px' }}>
+          {!isExpanded ? (
+            <>
+              <div className="status-indicator">
+                <div className={`status-light ${getStatusLightClass()}`} />
+              </div>
+              <button
+                className="expand-btn"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                +
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                <div className="status-indicator">
+                  <div className={`status-light ${getStatusLightClass()}`} />
+                </div>
+                <button
+                  className="expand-btn"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  −
+                </button>
+                <div className="control-group">
+                  <label htmlFor="wpm">WPM</label>
+                  <input
+                    id="wpm"
+                    type="number"
+                    value={wpm}
+                    onChange={handleWpmChange}
+                    onBlur={handleWpmBlur}
+                    min="10"
+                    max="900"
+                    className="wpm-input"
+                  />
+                </div>
+                <div className="shortcut-info" style={{ marginLeft: 'auto' }}>
+                  <code>⌘⌥V</code>
+                </div>
+              </div>
+              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', paddingLeft: '46px' }}>
+                <TemperatureSlider
+                  initialTemp={temperature}
+                  onChange={handleTemperatureChange}
                 />
               </div>
-              <div className="shortcut-info">
-                <code>⌘⌥V</code>
-              </div>
-            </div>
+            </>
           )}
         </div>
       </GlassSurface>

@@ -1,12 +1,14 @@
 const { app, BrowserWindow, globalShortcut, clipboard, ipcMain, screen, Menu } = require('electron');
 const path = require('path');
 const robot = require('@jitsi/robotjs');
+const platformAdapter = require('./platform/PlatformAdapter');
 
 // Simple in-memory state - no complex storage
 let mainWindow;
 let isTyping = false;
 let isPaused = false;
 let wpm = 80;
+let temperature = 50; // 0-100: 0=robot, 50=human, 100=erratic
 let currentTypingProcess = null;
 
 // Character lookup tables for fast typing
@@ -25,9 +27,10 @@ const REGULAR_CHAR_MAP = {
 
 // Simple typing simulator - core macro functionality
 class TypingSimulator {
-  constructor(text, wordsPerMinute) {
+  constructor(text, wordsPerMinute, temp = 50) {
     this.text = text;
     this.wpm = wordsPerMinute;
+    this.temperature = temp; // 0-100
     this.isStopped = false;
     this.isPaused = false;
     this.currentIndex = 0;
@@ -109,13 +112,30 @@ class TypingSimulator {
   }
 
   calculateDelay(char, prevChar) {
-    const baseDelay = (60 / this.wpm) * 1000 / 5;
-    const variation = baseDelay * (Math.random() * 0.4 - 0.2);
-    let delay = baseDelay + variation;
+    // Fixed WPM calculation: 6 CPW (5 chars + 1 space) for accurate timing
+    const baseDelay = (60 / this.wpm) * 1000 / 6;
 
-    if (prevChar === ' ') delay += Math.random() * 100 + 150;
-    if (prevChar === '.' || prevChar === '!' || prevChar === '?') delay += Math.random() * 400 + 400;
-    if (prevChar === ',') delay += Math.random() * 100 + 100;
+    // Temperature-based character variation (0% temp = 0 var, 100% temp = 50% var)
+    const tempFactor = this.temperature / 100; // 0.0 to 1.0
+    const maxVariation = tempFactor * 0.5;
+    const charVariation = baseDelay * (Math.random() * maxVariation * 2 - maxVariation);
+
+    let delay = baseDelay + charVariation;
+
+    // Word boundary pauses (scaled by temperature)
+    if (prevChar === ' ') {
+      delay += (Math.random() * 100 + 150) * tempFactor;
+    }
+
+    // Sentence pauses (scaled by temperature)
+    if (prevChar === '.' || prevChar === '!' || prevChar === '?') {
+      delay += (Math.random() * 400 + 400) * tempFactor;
+    }
+
+    // Comma pauses (scaled by temperature)
+    if (prevChar === ',') {
+      delay += (Math.random() * 100 + 100) * tempFactor;
+    }
 
     return Math.max(delay, 20);
   }
@@ -155,19 +175,20 @@ function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth } = primaryDisplay.workAreaSize;
 
+  // Get platform-specific window options
+  const platformOptions = platformAdapter.getWindowOptions();
+
   mainWindow = new BrowserWindow({
     width: 140,
     height: 50,
     x: Math.floor((screenWidth - 140) / 2),
     y: 0,
     frame: false,
-    transparent: true,
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: true,
     hasShadow: false,
-    vibrancy: 'under-window',
-    visualEffectState: 'active',
+    ...platformOptions,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -175,8 +196,8 @@ function createWindow() {
     }
   });
 
-  // Prevent screen capture/recording
-  mainWindow.setContentProtection(true);
+  // Prevent screen capture/recording (best effort)
+  platformAdapter.setContentProtection(mainWindow, true);
 
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
@@ -247,7 +268,7 @@ function registerGlobalShortcuts() {
     } else {
       const clipboardText = clipboard.readText();
       if (clipboardText) {
-        currentTypingProcess = new TypingSimulator(clipboardText, wpm);
+        currentTypingProcess = new TypingSimulator(clipboardText, wpm, temperature);
         currentTypingProcess.start();
       }
     }
@@ -264,38 +285,54 @@ function registerGlobalShortcuts() {
     }
   });
 
-  // Window movement shortcuts
+  // Window movement shortcuts - Changed to CommandOrControl+Alt+Arrow to avoid conflicts
   const moveDistance = 10;
 
-  globalShortcut.register('CommandOrControl+Shift+Up', () => {
-    if (mainWindow) {
-      const bounds = mainWindow.getBounds();
-      mainWindow.setBounds({ ...bounds, y: Math.max(0, bounds.y - moveDistance) });
+  globalShortcut.register('CommandOrControl+Alt+Up', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        const bounds = mainWindow.getBounds();
+        mainWindow.setBounds({ ...bounds, y: Math.max(0, bounds.y - moveDistance) });
+      } catch (e) {
+        // Ignore movement errors
+      }
     }
   });
 
-  globalShortcut.register('CommandOrControl+Shift+Down', () => {
-    if (mainWindow) {
-      const bounds = mainWindow.getBounds();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const maxY = primaryDisplay.workAreaSize.height - bounds.height;
-      mainWindow.setBounds({ ...bounds, y: Math.min(maxY, bounds.y + moveDistance) });
+  globalShortcut.register('CommandOrControl+Alt+Down', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        const bounds = mainWindow.getBounds();
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const maxY = primaryDisplay.workAreaSize.height - bounds.height;
+        mainWindow.setBounds({ ...bounds, y: Math.min(maxY, bounds.y + moveDistance) });
+      } catch (e) {
+        // Ignore movement errors
+      }
     }
   });
 
-  globalShortcut.register('CommandOrControl+Shift+Left', () => {
-    if (mainWindow) {
-      const bounds = mainWindow.getBounds();
-      mainWindow.setBounds({ ...bounds, x: Math.max(0, bounds.x - moveDistance) });
+  globalShortcut.register('CommandOrControl+Alt+Left', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        const bounds = mainWindow.getBounds();
+        mainWindow.setBounds({ ...bounds, x: Math.max(0, bounds.x - moveDistance) });
+      } catch (e) {
+        // Ignore movement errors
+      }
     }
   });
 
-  globalShortcut.register('CommandOrControl+Shift+Right', () => {
-    if (mainWindow) {
-      const bounds = mainWindow.getBounds();
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const maxX = primaryDisplay.workAreaSize.width - bounds.width;
-      mainWindow.setBounds({ ...bounds, x: Math.min(maxX, bounds.x + moveDistance) });
+  globalShortcut.register('CommandOrControl+Alt+Right', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        const bounds = mainWindow.getBounds();
+        const primaryDisplay = screen.getPrimaryDisplay();
+        const maxX = primaryDisplay.workAreaSize.width - bounds.width;
+        mainWindow.setBounds({ ...bounds, x: Math.min(maxX, bounds.x + moveDistance) });
+      } catch (e) {
+        // Ignore movement errors
+      }
     }
   });
 }
@@ -306,8 +343,31 @@ ipcMain.handle('get-typing-state', () => {
 });
 
 ipcMain.on('update-wpm', (event, newWpm) => {
-  if (newWpm >= 10 && newWpm <= 300) {
+  if (newWpm >= 10 && newWpm <= 900) {
     wpm = newWpm;
+  }
+});
+
+ipcMain.on('update-temperature', (event, newTemp) => {
+  if (newTemp >= 0 && newTemp <= 100) {
+    temperature = newTemp;
+  }
+});
+
+ipcMain.on('resize-window', (event, { width, height }) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const bounds = mainWindow.getBounds();
+      mainWindow.setBounds({
+        x: Math.floor((primaryDisplay.workAreaSize.width - width) / 2),
+        y: bounds.y,
+        width,
+        height
+      });
+    } catch (e) {
+      // Ignore resize errors
+    }
   }
 });
 
