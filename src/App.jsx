@@ -25,8 +25,8 @@ function App() {
 
   useEffect(() => {
     // Resize window when expansion state changes
-    const width = isExpanded ? 500 : 140;
-    const height = isExpanded ? 110 : 50;
+    const width = isExpanded ? 600 : 140;
+    const height = isExpanded ? 60 : 50;
     window.electron.resizeWindow({ width, height });
   }, [isExpanded]);
 
@@ -80,64 +80,50 @@ function App() {
   return (
     <div className="app-container">
       <GlassSurface
-        width={isExpanded ? 500 : 140}
-        height={isExpanded ? 110 : 50}
+        width={isExpanded ? 600 : 140}
+        height={isExpanded ? 60 : 50}
         borderRadius={isExpanded ? 20 : 25}
         className="control-bar"
       >
-        <div className="controls" style={{ flexDirection: isExpanded ? 'column' : 'row', padding: isExpanded ? '10px 16px' : '6px 12px', gap: isExpanded ? '6px' : '8px' }}>
-          {!isExpanded ? (
+        <div className="controls" style={{ flexDirection: 'row', padding: isExpanded ? '8px 12px' : '6px 12px', gap: '10px', alignItems: 'center' }}>
+          <div className="status-indicator">
+            <div className={`status-light ${getStatusLightClass()}`} />
+          </div>
+          <button
+            className="expand-btn"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? '−' : '+'}
+          </button>
+          {isExpanded && (
             <>
-              <div className="status-indicator">
-                <div className={`status-light ${getStatusLightClass()}`} />
+              <div className="control-group">
+                <label htmlFor="wpm">WPM</label>
+                <input
+                  id="wpm"
+                  type="number"
+                  value={wpm}
+                  onChange={handleWpmChange}
+                  onBlur={handleWpmBlur}
+                  min="10"
+                  max="900"
+                  className="wpm-input"
+                />
               </div>
-              <button
-                className="expand-btn"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                +
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-                <div className="status-indicator">
-                  <div className={`status-light ${getStatusLightClass()}`} />
-                </div>
-                <button
-                  className="expand-btn"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                >
-                  −
-                </button>
-                <div className="control-group">
-                  <label htmlFor="wpm">WPM</label>
-                  <input
-                    id="wpm"
-                    type="number"
-                    value={wpm}
-                    onChange={handleWpmChange}
-                    onBlur={handleWpmBlur}
-                    min="10"
-                    max="900"
-                    className="wpm-input"
-                  />
-                </div>
-                <div className="shortcut-info" style={{ marginLeft: 'auto' }}>
-                  <code>⌘⌥V</code>
-                </div>
-              </div>
-              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', paddingLeft: '46px' }}>
+              <div className="slider-group">
                 <TemperatureSlider
                   value={temperature}
                   onChange={handleTemperatureChange}
                 />
               </div>
-              <div className="expanded-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', paddingLeft: '46px' }}>
+              <div className="slider-group">
                 <PauseSlider
                   value={pauseMultiplier}
                   onChange={handlePauseChange}
                 />
+              </div>
+              <div className="shortcut-info">
+                <code>⌘⌥V</code>
               </div>
             </>
           )}

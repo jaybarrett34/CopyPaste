@@ -3,10 +3,7 @@ import './PauseSlider.css';
 function PauseSlider({ value, onChange }) {
   return (
     <div className="pause-slider-container">
-      <div className="pause-header">
-        <span className="pause-label">Pause</span>
-        <span className="pause-value">{value}%</span>
-      </div>
+      <span className="pause-label">P:</span>
       <input
         type="range"
         min="0"
@@ -15,6 +12,7 @@ function PauseSlider({ value, onChange }) {
         onChange={(e) => onChange(parseInt(e.target.value))}
         className="pause-range"
       />
+      <span className="pause-value">{value}%</span>
     </div>
   );
 }

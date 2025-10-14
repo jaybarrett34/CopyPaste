@@ -1,19 +1,19 @@
 .pause-slider-container {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 100px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
   -webkit-app-region: no-drag;
 }
 
 .pause-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  gap: 4px;
+  font-size: 9px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2px;
 }
 
 .pause-label {
@@ -30,7 +30,7 @@
 .pause-range {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
+  width: 70px;
   height: 4px;
   border-radius: 2px;
   background: linear-gradient(

@@ -1,19 +1,18 @@
 .temperature-slider {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 120px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 140px;
   -webkit-app-region: no-drag;
 }
 
 .slider-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
 }
 
 .temp-value {
@@ -24,7 +23,7 @@
 .temp-range {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
+  width: 80px;
   height: 4px;
   border-radius: 2px;
   background: linear-gradient(

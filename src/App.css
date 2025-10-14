@@ -154,3 +154,14 @@
   font-weight: 500;
   white-space: nowrap;
 }
+
+.expanded-row {
+  -webkit-app-region: no-drag;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  min-width: 100px;
+  -webkit-app-region: no-drag;
+}
