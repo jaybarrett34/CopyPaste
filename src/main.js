@@ -1,9 +1,10 @@
 const { app, BrowserWindow, globalShortcut, clipboard, ipcMain, screen, Menu } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const robot = require('@jitsi/robotjs');
 const platformAdapter = require('./platform/PlatformAdapter');
 
-// Simple in-memory state - no complex storage
+// Simple in-memory state
 let mainWindow;
 let isTyping = false;
 let isPaused = false;
@@ -11,6 +12,19 @@ let wpm = 80;
 let temperature = 50; // 0-100: 0=robot, 50=human, 100=erratic
 let pauseMultiplier = 50; // 0-100: controls how much extra delay at word boundaries
 let currentTypingProcess = null;
+
+// Default shortcuts
+let shortcuts = {
+  startStop: 'CommandOrControl+Alt+V',
+  pauseResume: 'CommandOrControl+Shift+P',
+  moveUp: 'CommandOrControl+Alt+Up',
+  moveDown: 'CommandOrControl+Alt+Down',
+  moveLeft: 'CommandOrControl+Alt+Left',
+  moveRight: 'CommandOrControl+Alt+Right'
+};
+
+// Settings file path
+const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 // Character lookup tables for fast typing
 const SHIFT_CHAR_MAP = {
@@ -269,91 +283,142 @@ function createApplicationMenu() {
   Menu.setApplicationMenu(menu);
 }
 
+function loadSettings() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      const data = fs.readFileSync(settingsPath, 'utf8');
+      const settings = JSON.parse(data);
+      if (settings.shortcuts) {
+        shortcuts = { ...shortcuts, ...settings.shortcuts };
+      }
+    }
+  } catch (e) {
+    // Ignore errors, use defaults
+  }
+}
+
+function saveSettings() {
+  try {
+    const settings = { shortcuts };
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+  } catch (e) {
+    // Ignore errors
+  }
+}
+
 function registerGlobalShortcuts() {
   globalShortcut.unregisterAll();
 
   // Main shortcut - start/stop typing
-  globalShortcut.register('CommandOrControl+Alt+V', () => {
-    if (isTyping) {
-      if (currentTypingProcess) {
-        currentTypingProcess.stop();
-        currentTypingProcess = null;
+  try {
+    globalShortcut.register(shortcuts.startStop, () => {
+      if (isTyping) {
+        if (currentTypingProcess) {
+          currentTypingProcess.stop();
+          currentTypingProcess = null;
+        }
+      } else {
+        const clipboardText = clipboard.readText();
+        if (clipboardText) {
+          currentTypingProcess = new TypingSimulator(clipboardText, wpm, temperature, pauseMultiplier);
+          currentTypingProcess.start();
+        }
       }
-    } else {
-      const clipboardText = clipboard.readText();
-      if (clipboardText) {
-        currentTypingProcess = new TypingSimulator(clipboardText, wpm, temperature, pauseMultiplier);
-        currentTypingProcess.start();
-      }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 
   // Pause/resume shortcut
-  globalShortcut.register('CommandOrControl+Shift+P', () => {
-    if (currentTypingProcess && isTyping) {
-      if (isPaused) {
-        currentTypingProcess.resume();
-      } else {
-        currentTypingProcess.pause();
+  try {
+    globalShortcut.register(shortcuts.pauseResume, () => {
+      if (currentTypingProcess && isTyping) {
+        if (isPaused) {
+          currentTypingProcess.resume();
+        } else {
+          currentTypingProcess.pause();
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 
-  // Window movement shortcuts - Changed to CommandOrControl+Alt+Arrow to avoid conflicts
+  // Window movement shortcuts
   const moveDistance = 10;
 
-  globalShortcut.register('CommandOrControl+Alt+Up', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      try {
-        const bounds = mainWindow.getBounds();
-        mainWindow.setBounds({ ...bounds, y: Math.max(0, bounds.y - moveDistance) });
-      } catch (e) {
-        // Ignore movement errors
+  try {
+    globalShortcut.register(shortcuts.moveUp, () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+          const bounds = mainWindow.getBounds();
+          mainWindow.setBounds({ ...bounds, y: Math.max(0, bounds.y - moveDistance) });
+        } catch (e) {
+          // Ignore movement errors
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 
-  globalShortcut.register('CommandOrControl+Alt+Down', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      try {
-        const bounds = mainWindow.getBounds();
-        const primaryDisplay = screen.getPrimaryDisplay();
-        const maxY = primaryDisplay.workAreaSize.height - bounds.height;
-        mainWindow.setBounds({ ...bounds, y: Math.min(maxY, bounds.y + moveDistance) });
-      } catch (e) {
-        // Ignore movement errors
+  try {
+    globalShortcut.register(shortcuts.moveDown, () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+          const bounds = mainWindow.getBounds();
+          const primaryDisplay = screen.getPrimaryDisplay();
+          const maxY = primaryDisplay.workAreaSize.height - bounds.height;
+          mainWindow.setBounds({ ...bounds, y: Math.min(maxY, bounds.y + moveDistance) });
+        } catch (e) {
+          // Ignore movement errors
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 
-  globalShortcut.register('CommandOrControl+Alt+Left', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      try {
-        const bounds = mainWindow.getBounds();
-        mainWindow.setBounds({ ...bounds, x: Math.max(0, bounds.x - moveDistance) });
-      } catch (e) {
-        // Ignore movement errors
+  try {
+    globalShortcut.register(shortcuts.moveLeft, () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+          const bounds = mainWindow.getBounds();
+          mainWindow.setBounds({ ...bounds, x: Math.max(0, bounds.x - moveDistance) });
+        } catch (e) {
+          // Ignore movement errors
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 
-  globalShortcut.register('CommandOrControl+Alt+Right', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      try {
-        const bounds = mainWindow.getBounds();
-        const primaryDisplay = screen.getPrimaryDisplay();
-        const maxX = primaryDisplay.workAreaSize.width - bounds.width;
-        mainWindow.setBounds({ ...bounds, x: Math.min(maxX, bounds.x + moveDistance) });
-      } catch (e) {
-        // Ignore movement errors
+  try {
+    globalShortcut.register(shortcuts.moveRight, () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+          const bounds = mainWindow.getBounds();
+          const primaryDisplay = screen.getPrimaryDisplay();
+          const maxX = primaryDisplay.workAreaSize.width - bounds.width;
+          mainWindow.setBounds({ ...bounds, x: Math.min(maxX, bounds.x + moveDistance) });
+        } catch (e) {
+          // Ignore movement errors
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // Ignore registration errors
+  }
 }
 
 // Minimal IPC handlers
 ipcMain.handle('get-typing-state', () => {
   return { isTyping, isPaused };
+});
+
+ipcMain.handle('get-shortcuts', () => {
+  return shortcuts;
 });
 
 ipcMain.on('update-wpm', (event, newWpm) => {
@@ -372,6 +437,12 @@ ipcMain.on('update-pause', (event, newPause) => {
   if (newPause >= 0 && newPause <= 100) {
     pauseMultiplier = newPause;
   }
+});
+
+ipcMain.on('update-shortcuts', (event, newShortcuts) => {
+  shortcuts = { ...shortcuts, ...newShortcuts };
+  saveSettings();
+  registerGlobalShortcuts();
 });
 
 ipcMain.on('resize-window', (event, { width, height }) => {
@@ -393,6 +464,7 @@ ipcMain.on('resize-window', (event, { width, height }) => {
 
 // App lifecycle
 app.whenReady().then(() => {
+  loadSettings();
   createWindow();
   registerGlobalShortcuts();
 

@@ -1,11 +1,11 @@
 /**
  * Platform Adapter - Abstracts platform-specific differences
- * Handles macOS, Windows, and Linux platform variations
+ * Handles macOS and Linux platform variations
  */
 
 class PlatformAdapter {
   constructor() {
-    this.platform = process.platform; // darwin, win32, linux
+    this.platform = process.platform; // darwin or linux
   }
 
   /**
@@ -19,14 +19,8 @@ class PlatformAdapter {
         visualEffectState: 'active',
         transparent: true
       };
-    } else if (this.platform === 'win32') {
-      // Windows - use acrylic or transparent
-      return {
-        transparent: true,
-        backgroundMaterial: 'acrylic' // Windows 11+
-      };
     } else {
-      // Linux - basic transparency
+      // Linux - basic transparency with frame disabled
       return {
         transparent: true,
         frame: false
@@ -35,11 +29,11 @@ class PlatformAdapter {
   }
 
   /**
-   * Set content protection (best effort)
-   * Only works on macOS and Windows, with limitations
+   * Set content protection (macOS only)
+   * Note: This doesn't block modern screen capture tools on macOS 15+
    */
   setContentProtection(window, enabled) {
-    if (this.platform === 'darwin' || this.platform === 'win32') {
+    if (this.platform === 'darwin') {
       try {
         window.setContentProtection(enabled);
         return true;
@@ -54,7 +48,7 @@ class PlatformAdapter {
   /**
    * Format shortcut for platform-specific display
    * macOS: ⌘⌥V
-   * Windows/Linux: Ctrl+Alt+V
+   * Linux: Ctrl+Alt+V
    */
   formatShortcut(shortcut) {
     if (this.platform === 'darwin') {
@@ -76,23 +70,14 @@ class PlatformAdapter {
    * Get platform name for display
    */
   getPlatformName() {
-    switch (this.platform) {
-      case 'darwin':
-        return 'macOS';
-      case 'win32':
-        return 'Windows';
-      case 'linux':
-        return 'Linux';
-      default:
-        return 'Unknown';
-    }
+    return this.platform === 'darwin' ? 'macOS' : 'Linux';
   }
 
   /**
    * Check if content protection is available
    */
   hasContentProtection() {
-    return this.platform === 'darwin' || this.platform === 'win32';
+    return this.platform === 'darwin';
   }
 
   /**
@@ -101,11 +86,23 @@ class PlatformAdapter {
   getIconPath(buildPath) {
     if (this.platform === 'darwin') {
       return `${buildPath}/icon.icns`;
-    } else if (this.platform === 'win32') {
-      return `${buildPath}/icon.ico`;
     } else {
       return `${buildPath}/icon.png`;
     }
+  }
+
+  /**
+   * Check if running on macOS
+   */
+  isMacOS() {
+    return this.platform === 'darwin';
+  }
+
+  /**
+   * Check if running on Linux
+   */
+  isLinux() {
+    return this.platform === 'linux';
   }
 }
 
