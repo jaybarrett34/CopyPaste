@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import GlassSurface from './components/GlassSurface';
 import TemperatureSlider from './components/TemperatureSlider';
 import PauseSlider from './components/PauseSlider';
+import Settings from './components/Settings';
 import './App.css';
 
 function App() {
@@ -10,6 +11,15 @@ function App() {
   const [temperature, setTemperature] = useState(50);
   const [pauseMultiplier, setPauseMultiplier] = useState(50);
   const [typingState, setTypingState] = useState('ready'); // ready, typing, paused, error
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [shortcuts, setShortcuts] = useState({
+    startStop: 'CommandOrControl+Alt+V',
+    pauseResume: 'CommandOrControl+Shift+P',
+    moveUp: 'CommandOrControl+Alt+Up',
+    moveDown: 'CommandOrControl+Alt+Down',
+    moveLeft: 'CommandOrControl+Alt+Left',
+    moveRight: 'CommandOrControl+Alt+Right'
+  });
 
   useEffect(() => {
     // Listen for typing state changes
@@ -20,6 +30,13 @@ function App() {
     // Request initial state
     window.electron.getTypingState().then(state => {
       setTypingState(state.isTyping ? (state.isPaused ? 'paused' : 'typing') : 'ready');
+    });
+
+    // Load saved shortcuts
+    window.electron.getShortcuts().then(savedShortcuts => {
+      if (savedShortcuts) {
+        setShortcuts(savedShortcuts);
+      }
     });
   }, []);
 
@@ -62,6 +79,11 @@ function App() {
   const handlePauseChange = (newPause) => {
     setPauseMultiplier(newPause);
     window.electron.updatePause(newPause);
+  };
+
+  const handleShortcutsChange = (newShortcuts) => {
+    setShortcuts(newShortcuts);
+    window.electron.updateShortcuts(newShortcuts);
   };
 
   const getStatusLightClass = () => {
@@ -125,10 +147,23 @@ function App() {
               <div className="shortcut-info">
                 <code>⌘⌥V</code>
               </div>
+              <button
+                className="settings-btn"
+                onClick={() => setIsSettingsOpen(true)}
+                title="Settings"
+              >
+                ⚙
+              </button>
             </>
           )}
         </div>
       </GlassSurface>
+      <Settings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        shortcuts={shortcuts}
+        onShortcutsChange={handleShortcutsChange}
+      />
     </div>
   );
 }

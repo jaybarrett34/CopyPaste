@@ -165,3 +165,31 @@
   min-width: 100px;
   -webkit-app-region: no-drag;
 }
+
+.settings-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05) rotate(45deg);
+}
+
+.settings-btn:active {
+  transform: scale(0.95) rotate(45deg);
+}
