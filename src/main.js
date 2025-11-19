@@ -115,10 +115,10 @@ class TypingSimulator {
 
   calculateDelay(char, prevChar) {
     // WPM = Words Per Minute
-    // Standard: 1 word = 5 characters
-    // So characters per minute = WPM * 5
-    // Milliseconds per character = 60000 / (WPM * 5) = 12000 / WPM
-    const baseDelay = 12000 / this.wpm;
+    // FIXED v1.1.0: Changed to 1 word = 6 characters for accurate timing
+    // Characters per minute = WPM * 6
+    // Milliseconds per character = 60000 / (WPM * 6) = 10000 / WPM
+    const baseDelay = 10000 / this.wpm;
 
     // Temperature controls randomness/variation (0-100%)
     const tempFactor = this.temperature / 100; // 0.0 to 1.0

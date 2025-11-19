@@ -438,6 +438,53 @@ When you return from lunch, please test these features:
 
 ---
 
-**Last Updated:** October 14, 2025 - v1.1.0 Implementation Complete
-**Status:** Ready for UI/UX testing by user
-**Next Steps:** User testing, potential bug fixes, future enhancements
+## v1.1.1 Bug Fixes (November 19, 2025)
+
+### Issues Fixed:
+
+**1. WPM Calculation Bug** ✓ FIXED
+- **Issue**: Code still used `/5` CPW formula (12000/WPM) despite CLAUDE.md claiming `/6` was implemented
+- **Location**: `src/main.js:121` - `calculateDelay()` method
+- **Fix**: Changed from `const baseDelay = 12000 / this.wpm;` to `const baseDelay = 10000 / this.wpm;`
+- **Impact**: Now provides accurate WPM timing (60 WPM actually types at 60 WPM, not slower)
+
+**2. Windows Build Issues** ✓ ADDRESSED
+- **Issue**: robotjs native module fails on Windows without proper rebuilding
+- **Root Cause**: Native modules need compilation for specific Electron version and platform
+- **Solutions Implemented**:
+  - Added `@electron/rebuild` to devDependencies
+  - Added `postinstall` script: `electron-builder install-app-deps && npx @electron/rebuild`
+  - Added manual `rebuild` script: `npx @electron/rebuild`
+  - Updated `package` script to build UI first: `npm run build && electron-builder`
+  - Created comprehensive `WINDOWS_SETUP.md` guide
+
+**3. Missing Documentation** ✓ FIXED
+- **Issue**: No Windows-specific setup instructions
+- **Fix**: Created detailed `WINDOWS_SETUP.md` with:
+  - Prerequisites (Node.js, Visual Studio Build Tools, Python)
+  - Step-by-step build instructions
+  - Troubleshooting guide for common errors
+  - Development and deployment instructions
+
+### Files Modified:
+- `src/main.js` - Fixed WPM calculation formula
+- `package.json` - Added postinstall and rebuild scripts
+- `WINDOWS_SETUP.md` - New comprehensive Windows guide
+
+### Testing Status:
+- ✓ Vite build tested and working
+- ⚠ robotjs rebuild requires network access (user must test on Windows)
+- ⚠ Windows packaging requires Windows environment
+
+### Next Steps for User:
+1. Pull latest changes
+2. On Windows: Run `npm install` (will auto-rebuild robotjs)
+3. Test WPM accuracy with actual timing
+4. Test on Windows 10/11
+5. Report any remaining issues
+
+---
+
+**Last Updated:** November 19, 2025 - v1.1.1 Bug Fixes
+**Status:** Ready for Windows testing and deployment
+**Next Steps:** User testing on Windows, verify WPM accuracy, package Windows installer
