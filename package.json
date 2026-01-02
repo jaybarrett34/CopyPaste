@@ -11,7 +11,7 @@
     "package": "electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jay Barrett <jaybarrett34@users.noreply.github.com>",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
