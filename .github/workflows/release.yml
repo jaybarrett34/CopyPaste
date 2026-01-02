@@ -1,0 +1,197 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.1.0)'
+        required: true
+        type: string
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite bundle
+        run: npm run build
+
+      - name: Build macOS (arm64)
+        run: npm run package -- --mac --arm64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build macOS (x64)
+        run: npm run package -- --mac --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-builds
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite bundle
+        run: npm run build
+
+      - name: Build Windows
+        run: npm run package -- --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-builds
+          path: |
+            release/*.exe
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxtst-dev libpng-dev
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite bundle
+        run: npm run build
+
+      - name: Build Linux
+        run: npm run package -- --linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds
+          path: |
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error
+
+  create-release:
+    needs: [build-macos, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          cp release-artifacts/macos-builds/* release/ || true
+          cp release-artifacts/windows-builds/* release/ || true
+          cp release-artifacts/linux-builds/* release/ || true
+          ls -la release/
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: CopyPaste v${{ steps.version.outputs.version }}
+          body: |
+            ## CopyPaste v${{ steps.version.outputs.version }}
+
+            Natural typing automation that bypasses paste detection.
+
+            ### Downloads
+
+            | Platform | File |
+            |----------|------|
+            | macOS (Apple Silicon) | `CopyPaste-${{ steps.version.outputs.version }}-arm64.dmg` |
+            | macOS (Intel) | `CopyPaste-${{ steps.version.outputs.version }}.dmg` |
+            | Windows | `CopyPaste-Setup-${{ steps.version.outputs.version }}.exe` |
+            | Linux | `CopyPaste-${{ steps.version.outputs.version }}.AppImage` |
+
+            ### Installation
+
+            **macOS:**
+            1. Download the `.dmg` file for your architecture
+            2. Open and drag CopyPaste to Applications
+            3. Right-click > Open (first launch only)
+            4. Grant Accessibility permissions when prompted
+
+            **Windows:**
+            1. Download and run the `.exe` installer
+
+            **Linux:**
+            1. Download the `.AppImage`
+            2. Make executable: `chmod +x CopyPaste-*.AppImage`
+            3. Run it
+
+            ### Quick Start
+
+            1. Copy text to clipboard (`Cmd+C` / `Ctrl+C`)
+            2. Click where you want to type
+            3. Press `Cmd+Alt+V` (macOS) or `Ctrl+Alt+V` (Windows/Linux)
+
+            See [README](https://github.com/jaybarrett34/CopyPaste#readme) for full documentation.
+          files: release/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
